@@ -39,7 +39,7 @@ def main():
     file_sender = FileSender(sender)
 
     # show all the files
-    logger.log('The following files will be upload:')
+    logger.log('The following files will be uploaded:')
     for file in files:
         logger.log(str(file))
 
