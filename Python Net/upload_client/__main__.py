@@ -1,42 +1,66 @@
 import argparse
-import json
-from base64 import b64encode
 from pathlib import Path
 import socket
+
+from coder import Base85Coder
+from io_stream.reader import SocketReader
+from io_stream.sender import SocketSender
+from logger import Logger, ConsoleLogger
+from upload_client.file_sender import FileSender
 
 
 def main():
     sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
     args = _arg_parser_factory().parse_args()
-    filepath = Path(args.file)
+    file_path = Path(args.file)
 
     host = args.host
     port = args.port
 
     sock.connect((host, port))
+    logger: Logger = ConsoleLogger()
+    coder = Base85Coder()
 
-    sock.sendall((filepath.name + '\n').encode())
-    print('transport started...')
-    data = b''
-    with open(str(filepath), 'rb') as f:
-        tmp = f.read(1024)
-        while tmp:
-            data += tmp
-            tmp = f.read(1024)
+    sender = SocketSender(sock, coder)
+    reader = SocketReader(sock, coder)
 
-        sock.sendall(b'd:' + b64encode(data))
-    sock.sendall(b'\n\n')
-    data = sock.recv(1024)
-    if data == b'OK':
-        print(f'file {str(filepath)} saved to {host}')
+    if not file_path.exists():
+        logger.error(f'{str(file_path)} is not exists.')
+        exit(-1)
+
+    if file_path.is_file():
+        files = [file_path]
+        base_path = file_path.parent
     else:
-        print(f'file {str(filepath)} failed to save')
-    sock.close()
+        files = list(file_path.glob('./**/*.*'))
+        base_path = file_path
 
+    file_sender = FileSender(sender)
 
-def _recv_data_and_encode(f):
-    return json.dumps(f.read(1024).decode()).encode()
+    # show all the files
+    logger.log('The following files will be upload:')
+    for file in files:
+        logger.log(str(file))
+
+    proceed = input('proceed?(y/N):').lower() == 'y'
+    if not proceed:
+        logger.info('Operation stopped by user.')
+        exit(0)
+
+    for file in files:
+        file_sender.send_file(file, base_path)
+
+    file_sender.close()
+
+    for response in reader.read():
+        if response == b'ok':
+            logger.info('All file transmission has been done.')
+        elif response.startswith(b'error'):
+            logger.error(response.decode())
+        else:
+            logger.error('Unknown error occurred.')
+        reader.close()
 
 
 def _arg_parser_factory():
