@@ -1,5 +1,6 @@
 import socket
 from abc import abstractmethod, ABC
+from typing import Tuple
 
 from coder import Coder
 
@@ -14,7 +15,7 @@ class Sender(ABC):
         pass
 
 
-class SocketSender(Sender):
+class TCPSender(Sender):
 
     sock: socket.socket
     coder: Coder
@@ -28,3 +29,17 @@ class SocketSender(Sender):
 
     def close(self):
         self.sock.close()
+
+
+class UDPSender(Sender):
+    sock: socket.socket
+    address: Tuple[str, int]
+    coder: Coder
+
+    def __init__(self, sock: socket.socket, address: Tuple[str, int], coder: Coder):
+        self.sock = sock
+        self.address = address
+        self.coder = coder
+
+    def send(self, data: bytes):
+        self.sock.sendto(self.coder.encode(data), self.address)

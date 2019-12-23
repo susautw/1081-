@@ -3,8 +3,8 @@ from pathlib import Path
 import socket
 
 from coder import Base85Coder
-from io_stream.reader import SocketReader
-from io_stream.sender import SocketSender
+from io_stream.reader import TCPReader
+from io_stream.sender import TCPSender
 from logger import Logger, ConsoleLogger
 from upload_client.file_sender import FileSender
 
@@ -22,8 +22,8 @@ def main():
     logger: Logger = ConsoleLogger()
     coder = Base85Coder()
 
-    sender = SocketSender(sock, coder)
-    reader = SocketReader(sock, coder)
+    sender = TCPSender(sock, coder)
+    reader = TCPReader(sock, coder)
 
     if not file_path.exists():
         logger.error(f'{str(file_path)} is not exists.')

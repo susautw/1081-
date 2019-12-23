@@ -4,8 +4,8 @@ from socket import socket
 from typing import Tuple
 
 from coder import Coder, Base85Coder
-from io_stream.reader import SocketReader
-from io_stream.sender import SocketSender
+from io_stream.reader import TCPReader
+from io_stream.sender import TCPSender
 from logger import Logger
 from upload_server.error import UnknownCommand
 from upload_server.file_receiver import FileReceiver
@@ -21,8 +21,8 @@ class ThreadingFileReceiver(threading.Thread):
         super().__init__()
         self.client = client
         self.save_path = save_path
-        self.reader = SocketReader(self.client, self.coder)
-        self.sender = SocketSender(self.client, self.coder)
+        self.reader = TCPReader(self.client, self.coder)
+        self.sender = TCPSender(self.client, self.coder)
         self.logger = logger
 
     def run(self):
@@ -53,7 +53,7 @@ class ThreadingFileReceiver(threading.Thread):
 
         except Exception as e:
             msg = str(e)
-            self.send_error(msg)
+            self._send_error(msg)
             self.logger.error(msg)
 
         finally:
@@ -61,11 +61,8 @@ class ThreadingFileReceiver(threading.Thread):
             self.client.close()
             self.logger.info('Closed the connection.\n')
 
-    def send_error(self, message):
+    def _send_error(self, message):
         self.sender.send(b'error ' + message.encode())
-
-    def send_closed(self):
-        self.sender.send(b'closed')
 
     @staticmethod
     def _get_command(line: bytes) -> Tuple[bytes, bytes]:
