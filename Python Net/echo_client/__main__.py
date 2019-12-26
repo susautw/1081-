@@ -25,13 +25,16 @@ def main():
         reader = UDPReader(sock, coder)
     else:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.connect((host, port))
         sender = TCPSender(sock, coder)
         reader = TCPReader(sock, coder)
 
-    sender.send(msg.encode())
+    sender.send(b'')
+    sender.send(b'msg:' + msg.encode())
 
     for line in reader.read():
         logger.log(line.decode())
+        reader.close()
 
 
 def _arg_parser_factory():
@@ -39,7 +42,7 @@ def _arg_parser_factory():
     parser.add_argument('msg', type=str)
     parser.add_argument('host', type=str)
     parser.add_argument('-p', '--port', type=int, default=7086)
-    parser.add_argument('-u', '--udp', type=bool, action='store_true')
+    parser.add_argument('-u', '--udp', action='store_true')
     return parser
 
 

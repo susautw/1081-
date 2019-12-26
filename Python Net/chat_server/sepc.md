@@ -1,6 +1,6 @@
 # Chat
 ## functionality
-- room (create (& enter), enter, leave)
+- room (create , enter, leave)
 - registration
 - login (user_id, name, username, password)
 - receive messages

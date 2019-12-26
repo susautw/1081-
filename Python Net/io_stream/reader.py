@@ -82,7 +82,7 @@ class UDPReader(AbstractReader):
         self.last_client = None
 
     def _recv_data(self) -> bytes:
-        self.last_client, data = self.sock.recvfrom(self.chunk_size)
+        data, self.last_client = self.sock.recvfrom(self.chunk_size)
         return data
 
     def _decode(self, data: bytes) -> bytes:

@@ -42,4 +42,4 @@ class UDPSender(Sender):
         self.coder = coder
 
     def send(self, data: bytes):
-        self.sock.sendto(self.coder.encode(data), self.address)
+        self.sock.sendto(self.coder.encode(data) + b'\n', self.address)
