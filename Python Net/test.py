@@ -1,20 +1,15 @@
-import time
-import threading
+import random
 
 
 def main():
-    t = threading.Thread(target=thread_test, args=())
-    t.start()
-    t2 = threading.Thread(target=thread_test, args=())
-    t2.start()
-    t3 = threading.Thread(target=thread_test, args=())
-    t3.start()
-    time.sleep(0.2)
-    print(threading.active_count())
+    li = [random.randint(0, 1) for _ in range(100)]
 
-
-def thread_test():
-    pass
+    for i, e in enumerate(li):
+        print(e, end=' ')
+        if i % 10 == 9 and i != len(li) - 1:
+            print()
+    print('\n')
+    print(f'Total {len(list(filter(lambda x: x == 0, li)))} zeros in li')
 
 
 if __name__ == '__main__':

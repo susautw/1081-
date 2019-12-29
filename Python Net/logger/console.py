@@ -1,9 +1,10 @@
 import sys
 
 from logger import Logger, LogType
+from patterns import Singleton
 
 
-class ConsoleLogger(Logger):
+class ConsoleLogger(Logger, Singleton):
 
     def log(self, msg: str) -> None:
         if not LogType.is_enable(LogType.log, self._type):

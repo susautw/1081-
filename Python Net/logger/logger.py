@@ -1,7 +1,5 @@
 from abc import ABC, abstractmethod
 
-from patterns import Singleton
-
 
 class LogType:
     log: int = 1
@@ -15,7 +13,7 @@ class LogType:
         return type_ & unknown != 0
 
 
-class Logger(ABC, Singleton):
+class Logger(ABC):
     _type: int = LogType.all
 
     @abstractmethod

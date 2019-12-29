@@ -4,10 +4,10 @@ import argparse
 class Main:
     @staticmethod
     def main() -> None:
-        pass
+        args = Main._arg_parser_factory().parse_args()
 
     @staticmethod
-    def arg_parser_factory(self) -> argparse.ArgumentParser:
+    def _arg_parser_factory() -> argparse.ArgumentParser:
         parser = argparse.ArgumentParser()
         return parser
 
