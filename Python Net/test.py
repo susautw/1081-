@@ -1,15 +1,18 @@
-import random
+import os
+from pathlib import Path
+from time import sleep
 
 
 def main():
-    li = [random.randint(0, 1) for _ in range(100)]
+    f = Path('client.tmp')
 
-    for i, e in enumerate(li):
-        print(e, end=' ')
-        if i % 10 == 9 and i != len(li) - 1:
-            print()
-    print('\n')
-    print(f'Total {len(list(filter(lambda x: x == 0, li)))} zeros in li')
+    i = 0
+    with f.open('w') as fp:
+        while True:
+            sleep(0.01)
+            fp.write(f'a{i}\n')
+            fp.flush()
+            i += 1
 
 
 if __name__ == '__main__':

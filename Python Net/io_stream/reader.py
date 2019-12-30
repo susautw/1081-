@@ -12,23 +12,40 @@ class Reader(ABC):
         pass
 
     @abstractmethod
+    def read_line(self) -> bytes:
+        pass
+
+    @abstractmethod
     def close(self) -> None:
         pass
 
 
 class AbstractReader(Reader):
 
+    lines: Iterator[bytes] = None
+
+    def read_line(self):
+        if self.lines is None:
+            self.lines = self._read_line()
+        return next(self._read_line())
+
     def read(self) -> Iterator[bytes]:
+        if self.lines is None:
+            self.lines = self._read_line()
+
         for line in self._read_line():
             yield self._decode(line)
 
     def _read_line(self) -> Iterator[bytes]:
-        chunks = [b'']
-        while not self.closed():
-            data = chunks[-1] + self._recv_data()
-            chunks = data.split(b'\n')
-            for chunk in chunks[:-1]:
-                yield chunk
+        try:
+            chunks = [b'']
+            while not self.closed():
+                data = chunks[-1] + self._recv_data()
+                chunks = data.split(b'\n')
+                for chunk in chunks[:-1]:
+                    yield chunk
+        except Exception as e:
+            pass
 
     @abstractmethod
     def closed(self) -> bool:
@@ -93,4 +110,3 @@ class UDPReader(AbstractReader):
 
     def close(self) -> None:
         self.sock.close()
-

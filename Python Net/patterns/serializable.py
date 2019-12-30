@@ -7,9 +7,9 @@ T = TypeVar('T')
 class Serializable(ABC):
 
     @abstractmethod
-    def serialize(self) -> bytes:
+    def serialize(self) -> str:
         pass
 
     @abstractmethod
-    def unserialize(self, serialized: bytes):
+    def unserialize(self, serialized: str):
         pass
