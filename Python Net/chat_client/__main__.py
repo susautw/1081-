@@ -60,9 +60,11 @@ def main():
                 else:
                     logger.error('unknown command.')
                     raise Exception()
+                msg_receiver.command(data)
             else:
                 command = _message(data)
                 msg_receiver.message(data)
+                msg_receiver.command('message')
 
             invoker = CommandInvoker()
             invoker.store_command(command)
@@ -84,10 +86,6 @@ def show_messages():
     return Path(tmp_file_name)
 
 
-def die():
-    exit(0)
-
-
 class ThreadingMessageReceiver(threading.Thread):
     file: Path
     reader: Reader
@@ -107,7 +105,6 @@ class ThreadingMessageReceiver(threading.Thread):
             for line in self.reader.read():
                 self._write(line.decode())
             self._write_close()
-        die()
 
     def _write(self, msg: str):
         with self.lock:
@@ -124,6 +121,13 @@ class ThreadingMessageReceiver(threading.Thread):
         data = {
             'type': 'reflex_message',
             'content': msg
+        }
+        self._write(json.dumps(data) + '\n')
+
+    def command(self, command: str):
+        data = {
+            'type': 'executed_command',
+            'command': command
         }
         self._write(json.dumps(data) + '\n')
 

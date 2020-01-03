@@ -1,5 +1,5 @@
 import json
-from abc import abstractmethod
+from abc import abstractmethod, ABC
 from typing import List, Dict, Type
 
 from chat_server.client_handler import ClientHandler
@@ -13,18 +13,9 @@ class Command(Serializable):
     all_command: Dict[str, Type['Command']] = None
 
     @staticmethod
-    def get_command_class(type_: str):
+    def get_command(type_: str):
         if Command.all_command is None:
-            Command.all_command = {
-                Register.__name__: Register,
-                Login.__name__: Login,
-                Logout.__name__: Logout,
-                Create.__name__: Create,
-                Join.__name__: Join,
-                Leave.__name__: Leave,
-                Message.__name__: Message,
-                Close.__name__: Close
-            }
+            Command.all_command = {cmd.__name__: cmd for cmd in Command.__subclasses__()}
         return Command.all_command[type_]
 
     @abstractmethod
@@ -34,11 +25,10 @@ class Command(Serializable):
 
 class CommandInvoker(Serializable):
     commands: List[Command]
-    client_handler: ClientHandler
+    _receiver: ClientHandler
 
-    def __init__(self, client_handler: ClientHandler = None):
+    def __init__(self):
         self.commands = []
-        self.client_handler = client_handler
 
     def store_command(self, command: Command) -> None:
         self.commands.append(command)
@@ -51,12 +41,17 @@ class CommandInvoker(Serializable):
         data = [command.serialize() for command in self.commands]
         return json.dumps(data)
 
+    def set_receiver(self, receiver: ClientHandler):
+        self._receiver = receiver
+
     def unserialize(self, serialized: str):
+        assert self._receiver is not None, 'Must specify the receiver before unserializing.'
+
         data = []
         for command in json.loads(serialized):
             json_command = json.loads(command)
-            cmd_class = Command.get_command_class(json_command['type'])
-            _command = cmd_class(self.client_handler)
+            cmd_class = Command.get_command(json_command['type'])
+            _command = cmd_class(self._receiver)
             _command.unserialize(command)
             data.append(_command)
 

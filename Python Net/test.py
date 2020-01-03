@@ -4,15 +4,8 @@ from time import sleep
 
 
 def main():
-    f = Path('client.tmp')
-
-    i = 0
-    with f.open('w') as fp:
-        while True:
-            sleep(0.01)
-            fp.write(f'a{i}\n')
-            fp.flush()
-            i += 1
+    print('1\n'*10)
+    print('\x1b[A' * 10)
 
 
 if __name__ == '__main__':

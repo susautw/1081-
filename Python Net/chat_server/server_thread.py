@@ -32,7 +32,8 @@ class ServerThread(threading.Thread):
         client_handler = ClientHandler(self._sender, self.logger)
         for line in self._reader.read():
             try:
-                invoker = CommandInvoker(client_handler)
+                invoker = CommandInvoker()
+                invoker.set_receiver(client_handler)
                 invoker.unserialize(line.decode())
                 invoker.send_all()
             except DescribedException as e:

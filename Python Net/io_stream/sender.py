@@ -11,7 +11,12 @@ class Sender(ABC):
     def send(self, data: bytes):
         pass
 
+    @abstractmethod
     def close(self):
+        pass
+
+    @abstractmethod
+    def is_closed(self) -> bool:
         pass
 
 
@@ -30,6 +35,16 @@ class TCPSender(Sender):
     def close(self):
         self.sock.close()
 
+    def is_closed(self) -> bool:
+        if self.sock.__getattribute__('_closed'):
+            return True
+        try:
+            self.sock.send(b'')
+            return False
+        except ConnectionError as e:
+            self.sock.close()
+            return True
+
 
 class UDPSender(Sender):
     sock: socket.socket
@@ -43,3 +58,9 @@ class UDPSender(Sender):
 
     def send(self, data: bytes):
         self.sock.sendto(self.coder.encode(data) + b'\n', self.address)
+
+    def is_closed(self) -> bool:
+        return self.sock.__getattribute__('_closed')
+
+    def close(self):
+        pass
