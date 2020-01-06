@@ -168,7 +168,6 @@ class AbstractClientHandlerState(ClientHandlerState):
         }
         json_data = json.dumps(data).encode()
 
-        ClientHandler.close_all_disconnected_user()
         for user in ctx.room.users:
             if user != ctx.user:
                 ctx.chatting_clients[user].sender.send(json_data)
@@ -269,10 +268,10 @@ class Chatting(AbstractClientHandlerState):
         self._send_response(ctx, response)
 
     def leave(self, ctx: ClientHandler):
-        self._board_cast(ctx, f'{ctx.user.username} has left this room.')
-
         ctx.room.remove_user(ctx.user)
         ctx.state = LoggedIn()
+
+        self._board_cast(ctx, f'{ctx.user.username} has left this room.')
 
         response = {
             'type': 'report',
@@ -282,7 +281,6 @@ class Chatting(AbstractClientHandlerState):
 
     def close(self, ctx: ClientHandler):
         ctx.leave()
-        ctx.logout()
         ctx.close()
 
 
